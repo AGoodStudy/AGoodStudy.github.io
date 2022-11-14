@@ -1,0 +1,275 @@
+<!DOCTYPE html><html lang="" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>java锁 | Tech</title><meta name="author" content="DSH"><meta name="copyright" content="DSH"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="为什么需要Lock？为什么synchronized不够用 效率低：锁的释放情况少、试图获得锁时不能设定超时、不能中断一个正在试图获得锁的线程 不够灵活：加锁和释放的时机单一，每个锁仅有单一的条件 无法知道是否成功获取锁">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java锁">
+<meta property="og:url" content="https://github.com/AGoodStudy/2020/09/24/java%E9%94%81/index.html">
+<meta property="og:site_name" content="Tech">
+<meta property="og:description" content="为什么需要Lock？为什么synchronized不够用 效率低：锁的释放情况少、试图获得锁时不能设定超时、不能中断一个正在试图获得锁的线程 不够灵活：加锁和释放的时机单一，每个锁仅有单一的条件 无法知道是否成功获取锁">
+<meta property="og:locale">
+<meta property="og:image" content="https://github.com/AGoodStudy/img/c10.jpg">
+<meta property="article:published_time" content="2020-09-24T06:15:32.000Z">
+<meta property="article:modified_time" content="2022-11-10T12:04:15.512Z">
+<meta property="article:author" content="DSH">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="Lock">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/AGoodStudy/img/c10.jpg"><link rel="shortcut icon" href="/AGoodStudy/img/favicon.png"><link rel="canonical" href="https://github.com/AGoodStudy/2020/09/24/java%E9%94%81/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/AGoodStudy/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/AGoodStudy/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"Author: DSH","link":"Link: ","source":"Source: Tech","info":"Copyright is owned by the author. For commercial reprints, please contact the author for authorization. For non-commercial reprints, please indicate the source."}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'java锁',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-11-10 20:04:15'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/AGoodStudy/img/ava.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/AGoodStudy/archives/"><div class="headline">Articles</div><div class="length-num">20</div></a><a href="/AGoodStudy/tags/"><div class="headline">Tags</div><div class="length-num">19</div></a><a href="/AGoodStudy/categories/"><div class="headline">Categories</div><div class="length-num">8</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/AGoodStudy/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/AGoodStudy/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/AGoodStudy/img/c10.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/AGoodStudy/">Tech</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/AGoodStudy/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/AGoodStudy/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">java锁</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2020-09-24T06:15:32.000Z" title="Created 2020-09-24 14:15:32">2020-09-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2022-11-10T12:04:15.512Z" title="Updated 2022-11-10 20:04:15">2022-11-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/AGoodStudy/categories/JAVA/">JAVA</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="java锁"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h4 id="为什么需要Lock？"><a href="#为什么需要Lock？" class="headerlink" title="为什么需要Lock？"></a>为什么需要Lock？</h4><h5 id="为什么synchronized不够用"><a href="#为什么synchronized不够用" class="headerlink" title="为什么synchronized不够用"></a>为什么synchronized不够用</h5><ul>
+<li>效率低：锁的释放情况少、试图获得锁时不能设定超时、不能中断一个正在试图获得锁的线程</li>
+<li>不够灵活：加锁和释放的时机单一，每个锁仅有单一的条件</li>
+<li>无法知道是否成功获取锁</li>
+</ul>
+<span id="more"></span>
+
+<h5 id="死锁的情况"><a href="#死锁的情况" class="headerlink" title="死锁的情况"></a>死锁的情况</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="type">Resource</span> <span class="variable">resource1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Resource</span>();</span><br><span class="line">    <span class="keyword">static</span> <span class="type">Resource</span> <span class="variable">resource2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Resource</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">task</span>(<span class="literal">true</span>)).start();</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">task</span>(<span class="literal">false</span>)).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Resource</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">task</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">boolean</span> flag;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">task</span><span class="params">(<span class="type">boolean</span> flag)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.flag = flag;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(flag)&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (Test.resource1)&#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;资源1已被锁定，准备去获取资源2&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//给机会给另一个线程能锁住</span></span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">synchronized</span> (Test.resource2)&#123;</span><br><span class="line">                    System.out.println(<span class="string">&quot;资源2已被锁定&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (Test.resource2)&#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;资源2已被锁定，准备去获取资源1&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//给机会给另一个线程能锁住</span></span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">synchronized</span> (Test.resource1)&#123;</span><br><span class="line">                    System.out.println(<span class="string">&quot;资源1已被锁定&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="Lock四个获取锁的方法"><a href="#Lock四个获取锁的方法" class="headerlink" title="Lock四个获取锁的方法"></a>Lock四个获取锁的方法</h5><ul>
+<li>lock()：<ul>
+<li>最普通的获取锁，如果锁已被其他线程获取，则等待</li>
+<li>Lock不会像synchronized一样在异常时自动释放锁，需要自己释放</li>
+<li>所以需要在finally中释放锁，保证发生异常锁一定会释放</li>
+<li>lock（）方法不能被中断，一旦陷入死锁，lock()就会陷入永久等待</li>
+</ul>
+</li>
+<li>tryLock()：<ul>
+<li>用来尝试获取锁，如果当前锁没有被其他线程占用，则获取成功返回true，否则返回false</li>
+<li>相比lock，功能要强大一点，而且可以根据返回值决定后续程序行为</li>
+<li>返回值会立即返回，不会因为拿不到锁而等待</li>
+</ul>
+</li>
+<li>tryLock(long time,TimeUnit unit)：<ul>
+<li>超时放弃</li>
+</ul>
+</li>
+<li>lockInterruptibly()：<ul>
+<li>相当于把tryLock(long time,TimeUnit unit)中的超时时间设置为无限，在等待锁的过程中线程可以被中断</li>
+</ul>
+</li>
+</ul>
+<h4 id="锁的分类"><a href="#锁的分类" class="headerlink" title="锁的分类"></a>锁的分类</h4><p><img src="https://raw.githubusercontent.com/AGoodStudy/AGoodStudy.github.io/master/imgs/locks.png" alt="locks"></p>
+<h4 id="乐观锁和悲观锁"><a href="#乐观锁和悲观锁" class="headerlink" title="乐观锁和悲观锁"></a>乐观锁和悲观锁</h4><p>互斥同步锁的劣势</p>
+<ul>
+<li>阻塞和唤醒消耗的性能</li>
+<li>可能会永久阻塞，比如遇到无限循环、死锁等问题</li>
+<li>优先级反转，即使线程优先级高但是没拿到锁也会在拿到锁的优先级低的线程后执行</li>
+</ul>
+<h5 id="悲观锁"><a href="#悲观锁" class="headerlink" title="悲观锁"></a>悲观锁</h5><ul>
+<li>认为自己在处理操作的时候有其他线程来干扰，会锁住被操作对象</li>
+<li>java中悲观锁的实现就是synchronzed和Lock相关的类</li>
+<li>适合并发写入多的情况，适用于临界区持锁时间比较长的情况，悲观锁可以避免大量的无用自旋等消耗，典型情况：<ul>
+<li>临界区有IO操作</li>
+<li>临界区代码复杂或者循环量大</li>
+<li>临界区竞争非常激烈</li>
+</ul>
+</li>
+</ul>
+<h5 id="乐观锁"><a href="#乐观锁" class="headerlink" title="乐观锁"></a>乐观锁</h5><ul>
+<li>认为自己在处理操作的时候不会有其他线程来干扰，不会锁住被操作对象</li>
+<li>在更新时，会检查数据是否被其他线程修改过</li>
+<li>一般使用CAS算法实现</li>
+<li>典型例子是原子类、并发容器等</li>
+<li>适用于并发写入少，大部分是读取的场景，不加锁能让读取性能大幅提高</li>
+</ul>
+<h4 id="可重入锁"><a href="#可重入锁" class="headerlink" title="可重入锁"></a>可重入锁</h4><h5 id="什么是可重入"><a href="#什么是可重入" class="headerlink" title="什么是可重入"></a>什么是可重入</h5><ul>
+<li>同一个线程可以多次获取同一把锁</li>
+</ul>
+<h5 id="好处"><a href="#好处" class="headerlink" title="好处"></a>好处</h5><ul>
+<li>避免死锁</li>
+<li>提高封装性</li>
+</ul>
+<p>方法：</p>
+<ul>
+<li><p>lock.getHoldCount()获取当前锁的次数</p>
+</li>
+<li><p>lock.isHeldByCurrentThread()可以看出锁是否被当前线程持有</p>
+</li>
+<li><p>lock.getQueueLength()返回当前正在等待这把锁的队列有多长</p>
+</li>
+</ul>
+<h4 id="公平锁和非公平锁"><a href="#公平锁和非公平锁" class="headerlink" title="公平锁和非公平锁"></a>公平锁和非公平锁</h4><h5 id="什么是公平锁和非公平锁"><a href="#什么是公平锁和非公平锁" class="headerlink" title="什么是公平锁和非公平锁"></a>什么是公平锁和非公平锁</h5><p>公平指的是按照线程请求的顺序来分配锁；非公平锁指的是不完全按照请求的顺序，在一定的情况下可以插队，这样可以避免唤醒的空档期</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 演示公平和非公平锁</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FairLock</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">PrintQueue</span> <span class="variable">printQueue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PrintQueue</span>();</span><br><span class="line">        Thread[] threads = <span class="keyword">new</span> <span class="title class_">Thread</span>[<span class="number">10</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            threads[i] = <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">Job</span>(printQueue));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            threads[i].start();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">100</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Job</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line"></span><br><span class="line">    PrintQueue printQueue;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Job</span><span class="params">(PrintQueue printQueue)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.printQueue = printQueue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;开始打印&quot;</span>);</span><br><span class="line">        printQueue.printJob();</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;打印完毕&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">PrintQueue</span> &#123;</span><br><span class="line">    <span class="comment">//创建一个公平锁</span></span><br><span class="line">    <span class="comment">//true为公平，false为非公平</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">Lock</span> <span class="variable">queueLock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">printJob</span><span class="params">()</span> &#123;</span><br><span class="line">        queueLock.lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">duration</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">10</span>) + <span class="number">1</span>;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;正在打印,需要&quot;</span> + duration + <span class="string">&quot;秒&quot;</span>);</span><br><span class="line">            Thread.sleep(duration * <span class="number">1000</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            queueLock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        queueLock.lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">duration</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">10</span>) + <span class="number">1</span>;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;正在打印,需要&quot;</span> + duration + <span class="string">&quot;秒&quot;</span>);</span><br><span class="line">            Thread.sleep(duration * <span class="number">1000</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            queueLock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>公平的时候：当线程0释放第一把锁之后，想拿第二把锁，但是后面9个线程已经先排队了，所以第二次执行应该是线程1，第二个轮回线程0才会拿到锁，才能执行完毕</p>
+<p>非公平的时候：当线程0释放第一把锁之后本来应该由线程1来拿锁，但是由于唤醒线程1需要时间，所以依旧把锁给线程0使用，线程0直接执行完毕</p>
+<h5 id="公平锁："><a href="#公平锁：" class="headerlink" title="公平锁："></a>公平锁：</h5><ul>
+<li>优势：各线程公平平等，每个线程等待一段时间后都有执行机会</li>
+<li>劣势：更慢，吞吐量更小</li>
+</ul>
+<p>不公平锁：</p>
+<ul>
+<li>更快，吞吐量更大</li>
+<li>有可能产生现场饥饿，也就是某些线程在长时间内始终得不到执行</li>
+</ul>
+<h4 id="共享锁和排它锁"><a href="#共享锁和排它锁" class="headerlink" title="共享锁和排它锁"></a>共享锁和排它锁</h4><ul>
+<li>排它锁，又称独占锁、独享锁，synchronized就是排它锁</li>
+<li>共享锁，又称读锁，获得共享锁后，可以查看但无法修改和删除数据，其他线程此时可以获取到共享锁，也是无法修改删除</li>
+<li>这两个的典型就是ReentrantReadWriteLock</li>
+<li>特点：要么多读，要么一写</li>
+</ul>
+<p>例子</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">ReentrantReadWriteLock</span> <span class="variable">reentrantReadWriteLock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantReadWriteLock</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> ReentrantReadWriteLock.ReadLock readLock;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> ReentrantReadWriteLock.WriteLock writeLock;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    readLock = reentrantReadWriteLock.readLock();</span><br><span class="line">    writeLock = reentrantReadWriteLock.writeLock();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">read</span><span class="params">()</span> &#123;</span><br><span class="line">    readLock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot;得到了读锁&quot;</span>);</span><br><span class="line">        Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">    &#125;<span class="keyword">catch</span> (InterruptedException e)&#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot;释放了读锁&quot;</span>);</span><br><span class="line">        readLock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">write</span><span class="params">()</span> &#123;</span><br><span class="line">    writeLock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot;开始写&quot;</span>);</span><br><span class="line">        Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">    &#125;<span class="keyword">catch</span> (InterruptedException e)&#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot;释放了读锁&quot;</span>);</span><br><span class="line">        writeLock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;read(),<span class="string">&quot;Thread1&quot;</span>).start();</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;read(),<span class="string">&quot;Thread2&quot;</span>).start();</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;write(),<span class="string">&quot;Thread3&quot;</span>).start();</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;write(),<span class="string">&quot;Thread4&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="读写锁的插队策略"><a href="#读写锁的插队策略" class="headerlink" title="读写锁的插队策略"></a>读写锁的插队策略</h5><ul>
+<li>公平锁：不允许插队</li>
+<li>非公平锁<ul>
+<li>写锁可以随时插队</li>
+<li>读锁仅在等待队列头结点，不是想获取写锁的线程的时候可以插队，头结点如果是写锁就不会插队</li>
+</ul>
+</li>
+<li>锁的升降级<ul>
+<li>降级可以提高效率</li>
+<li>但是不允许升级，可能导致死锁</li>
+</ul>
+</li>
+</ul>
+<h4 id="自旋锁和阻塞锁"><a href="#自旋锁和阻塞锁" class="headerlink" title="自旋锁和阻塞锁"></a>自旋锁和阻塞锁</h4><p><strong>自旋锁</strong>：</p>
+<ul>
+<li><p>站着cpu不放，一直去检测</p>
+</li>
+<li><p>如果锁被占用的时间很长，那么自旋只会白浪费处理器资源</p>
+</li>
+<li><p>适合多核的服务器，并且并发度不能特别高，这种情况比阻塞锁效率高</p>
+</li>
+<li><p>适合临界区比较短小的情况，临界区大的话线程拿到了锁很久才会释放</p>
+</li>
+</ul>
+<p>简单的自旋锁案例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> AtomicReference&lt;Thread&gt; sign = <span class="keyword">new</span> <span class="title class_">AtomicReference</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">lock</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">Thread</span> <span class="variable">cur</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="keyword">while</span> (!sign.compareAndSet(<span class="literal">null</span>, cur)) &#123;</span><br><span class="line">        System.out.println(cur.getName() + <span class="string">&quot;自旋失败，再次尝试&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">unlock</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">Thread</span> <span class="variable">cur</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    sign.compareAndSet(cur, <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">SpinLock</span> <span class="variable">spinLock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SpinLock</span>();</span><br><span class="line"></span><br><span class="line">    <span class="type">Runnable</span> <span class="variable">runnable</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;尝试获取自旋锁&quot;</span>);</span><br><span class="line">            spinLock.lock();</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;获取到了自旋锁&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">300</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot;释放了锁&quot;</span>);</span><br><span class="line">                spinLock.unlock();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(runnable);</span><br><span class="line">    <span class="type">Thread</span> <span class="variable">thread1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(runnable);</span><br><span class="line"></span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="写代码时如何优化锁和提高并发性能"><a href="#写代码时如何优化锁和提高并发性能" class="headerlink" title="写代码时如何优化锁和提高并发性能"></a>写代码时如何优化锁和提高并发性能</h4><ul>
+<li>缩小同步代码块</li>
+<li>尽量不要锁住方法</li>
+<li>减少请求锁的次数</li>
+<li>锁中不要再包含锁</li>
+<li>选择合适的锁类型和合适的工具类</li>
+</ul>
+</article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/AGoodStudy/tags/JAVA/">JAVA</a><a class="post-meta__tags" href="/AGoodStudy/tags/Lock/">Lock</a></div><div class="post_share"><div class="social-share" data-image="/AGoodStudy/img/c10.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/AGoodStudy/2020/09/27/java%E5%8E%9F%E5%AD%90%E7%B1%BB/"><img class="prev-cover" src="/AGoodStudy/img/c6.jpg" onerror="onerror=null;src='/AGoodStudy/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">java原子类</div></div></a></div><div class="next-post pull-right"><a href="/AGoodStudy/2020/09/23/ThreadLocal/"><img class="next-cover" src="/AGoodStudy/img/c1.jpg" onerror="onerror=null;src='/AGoodStudy/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">ThreadLocal</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/AGoodStudy/2020/10/06/Future%E5%92%8CCallable/" title="Future和Callable"><img class="cover" src="/AGoodStudy/img/c4.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-10-06</div><div class="title">Future和Callable</div></div></a></div><div><a href="/AGoodStudy/2020/09/27/CAS/" title="CAS"><img class="cover" src="/AGoodStudy/img/c10.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-09-27</div><div class="title">CAS</div></div></a></div><div><a href="/AGoodStudy/2020/10/08/Nio/" title="NIO"><img class="cover" src="/AGoodStudy/img/cate.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-10-08</div><div class="title">NIO</div></div></a></div><div><a href="/AGoodStudy/2020/09/28/String%E6%98%93%E9%94%99%E7%82%B9/" title="Sting的坑"><img class="cover" src="/AGoodStudy/img/c1.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-09-28</div><div class="title">Sting的坑</div></div></a></div><div><a href="/AGoodStudy/2020/03/22/Spring-boot%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2%E5%88%B0tomcat%E5%AE%B9%E5%99%A8%E4%B8%AD/" title="Spring-boot项目部署到tomcat容器中"><img class="cover" src="/AGoodStudy/img/c4.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-03-22</div><div class="title">Spring-boot项目部署到tomcat容器中</div></div></a></div><div><a href="/AGoodStudy/2020/09/27/java%E5%8E%9F%E5%AD%90%E7%B1%BB/" title="java原子类"><img class="cover" src="/AGoodStudy/img/c6.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-09-27</div><div class="title">java原子类</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/AGoodStudy/img/ava.jpg" onerror="this.onerror=null;this.src='/AGoodStudy/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">DSH</div><div class="author-info__description">Recording</div></div><div class="card-info-data site-data is-center"><a href="/AGoodStudy/archives/"><div class="headline">Articles</div><div class="length-num">20</div></a><a href="/AGoodStudy/tags/"><div class="headline">Tags</div><div class="length-num">19</div></a><a href="/AGoodStudy/categories/"><div class="headline">Categories</div><div class="length-num">8</div></a></div><a id="card-info-btn" href="https://github.com/AGoodStudy"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81Lock%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">为什么需要Lock？</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88synchronized%E4%B8%8D%E5%A4%9F%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text">为什么synchronized不够用</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%AD%BB%E9%94%81%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-number">1.2.</span> <span class="toc-text">死锁的情况</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Lock%E5%9B%9B%E4%B8%AA%E8%8E%B7%E5%8F%96%E9%94%81%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-number">1.3.</span> <span class="toc-text">Lock四个获取锁的方法</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%81%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">2.</span> <span class="toc-text">锁的分类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B9%90%E8%A7%82%E9%94%81%E5%92%8C%E6%82%B2%E8%A7%82%E9%94%81"><span class="toc-number">3.</span> <span class="toc-text">乐观锁和悲观锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%82%B2%E8%A7%82%E9%94%81"><span class="toc-number">3.1.</span> <span class="toc-text">悲观锁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B9%90%E8%A7%82%E9%94%81"><span class="toc-number">3.2.</span> <span class="toc-text">乐观锁</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%AF%E9%87%8D%E5%85%A5%E9%94%81"><span class="toc-number">4.</span> <span class="toc-text">可重入锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8F%AF%E9%87%8D%E5%85%A5"><span class="toc-number">4.1.</span> <span class="toc-text">什么是可重入</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%A5%BD%E5%A4%84"><span class="toc-number">4.2.</span> <span class="toc-text">好处</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%AC%E5%B9%B3%E9%94%81%E5%92%8C%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81"><span class="toc-number">5.</span> <span class="toc-text">公平锁和非公平锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%85%AC%E5%B9%B3%E9%94%81%E5%92%8C%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81"><span class="toc-number">5.1.</span> <span class="toc-text">什么是公平锁和非公平锁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%85%AC%E5%B9%B3%E9%94%81%EF%BC%9A"><span class="toc-number">5.2.</span> <span class="toc-text">公平锁：</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E9%94%81%E5%92%8C%E6%8E%92%E5%AE%83%E9%94%81"><span class="toc-number">6.</span> <span class="toc-text">共享锁和排它锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E9%94%81%E7%9A%84%E6%8F%92%E9%98%9F%E7%AD%96%E7%95%A5"><span class="toc-number">6.1.</span> <span class="toc-text">读写锁的插队策略</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E6%97%8B%E9%94%81%E5%92%8C%E9%98%BB%E5%A1%9E%E9%94%81"><span class="toc-number">7.</span> <span class="toc-text">自旋锁和阻塞锁</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%99%E4%BB%A3%E7%A0%81%E6%97%B6%E5%A6%82%E4%BD%95%E4%BC%98%E5%8C%96%E9%94%81%E5%92%8C%E6%8F%90%E9%AB%98%E5%B9%B6%E5%8F%91%E6%80%A7%E8%83%BD"><span class="toc-number">8.</span> <span class="toc-text">写代码时如何优化锁和提高并发性能</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/AGoodStudy/2022/11/03/K8S%E6%90%AD%E5%BB%BAELK/" title="K8S搭建ELK"><img src="/AGoodStudy/img/c8.jpg" onerror="this.onerror=null;this.src='/AGoodStudy/img/404.jpg'" alt="K8S搭建ELK"/></a><div class="content"><a class="title" href="/AGoodStudy/2022/11/03/K8S%E6%90%AD%E5%BB%BAELK/" title="K8S搭建ELK">K8S搭建ELK</a><time datetime="2022-11-03T14:04:20.000Z" title="Created 2022-11-03 22:04:20">2022-11-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/AGoodStudy/2022/11/03/K8S-Pod/" title="K8S Pod"><img src="/AGoodStudy/img/c8.jpg" onerror="this.onerror=null;this.src='/AGoodStudy/img/404.jpg'" alt="K8S Pod"/></a><div class="content"><a class="title" href="/AGoodStudy/2022/11/03/K8S-Pod/" title="K8S Pod">K8S Pod</a><time datetime="2022-11-03T14:03:09.000Z" title="Created 2022-11-03 22:03:09">2022-11-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/AGoodStudy/2022/11/03/K8S-Secret/" title="K8S Secret"><img src="/AGoodStudy/img/c7.jpg" onerror="this.onerror=null;this.src='/AGoodStudy/img/404.jpg'" alt="K8S Secret"/></a><div class="content"><a class="title" href="/AGoodStudy/2022/11/03/K8S-Secret/" title="K8S Secret">K8S Secret</a><time datetime="2022-11-03T14:01:23.000Z" title="Created 2022-11-03 22:01:23">2022-11-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/AGoodStudy/2022/11/03/K8S-ConfigMap/" title="K8S ConfigMap"><img src="/AGoodStudy/img/c6.jpg" onerror="this.onerror=null;this.src='/AGoodStudy/img/404.jpg'" alt="K8S ConfigMap"/></a><div class="content"><a class="title" href="/AGoodStudy/2022/11/03/K8S-ConfigMap/" title="K8S ConfigMap">K8S ConfigMap</a><time datetime="2022-11-03T14:00:03.000Z" title="Created 2022-11-03 22:00:03">2022-11-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/AGoodStudy/2022/11/03/K8S-Service/" title="K8S Service"><img src="/AGoodStudy/img/c7.jpg" onerror="this.onerror=null;this.src='/AGoodStudy/img/404.jpg'" alt="K8S Service"/></a><div class="content"><a class="title" href="/AGoodStudy/2022/11/03/K8S-Service/" title="K8S Service">K8S Service</a><time datetime="2022-11-03T13:56:36.000Z" title="Created 2022-11-03 21:56:36">2022-11-03</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/AGoodStudy/js/utils.js"></script><script src="/AGoodStudy/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
